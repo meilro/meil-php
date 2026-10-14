@@ -1,0 +1,8 @@
+parameters:
+    level: 8
+    # The oldest PHP this package supports.
+    phpVersion: 80100
+    paths:
+        - src
+    # Callers without strict_types can pass anything; the runtime checks stay.
+    treatPhpDocTypesAsCertain: false
