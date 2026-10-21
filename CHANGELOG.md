@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 (2026-10-21)
+
+Breaking:
+
+- `contacts->add()` takes `audience_ids` (a list, also for one audience) instead of `audience_id`, and answers with `audiences`: one entry per audience, each with its own `subscribed`.
+
+New:
+
+- `contacts->add()` with `'confirm' => true`: the person is subscribed only after confirming from an email. Optional `confirmed_url`, `language`, `from` and `reply_to`.
+- `contacts->update()` with `audiences` (`[audienceId => true|false]`), for a preference page on your own site.
+- Every audience of a contact shows `pending_confirmation`, `subscribed_at` and `unsubscribed_at`. Listed contacts show `pending_confirmation`.
+- `preview_text` on emails, broadcasts and templates, and the `no_preview_text` content check.
+
 ## 0.1.0 (2026-10-14)
 
 First release.

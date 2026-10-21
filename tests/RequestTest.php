@@ -103,7 +103,7 @@ final class RequestTest extends TestCase
     {
         $t = new FakeTransport(FakeTransport::json([]), FakeTransport::json([]), FakeTransport::json([]));
         $meil = $this->client($t);
-        $meil->contacts->add(['audience_id' => 'a1', 'email' => 'c@y.ro', 'properties' => []]);
+        $meil->contacts->add(['audience_ids' => ['a1'], 'email' => 'c@y.ro', 'properties' => []]);
         $meil->emails->send(self::SEND + ['variables' => []]);
         $meil->broadcasts->unschedule('b1');
         self::assertStringContainsString('"properties":{}', (string) $t->requests[0]['raw']);

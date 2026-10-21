@@ -194,14 +194,16 @@ final class LiveTest extends TestCase
             $a = self::sim('contact-a');
             $b = self::sim('contact-b');
             array_push(self::$created['contacts'], $a, $b);
-            self::assertTrue($meil->contacts->add(['audience_id' => $audience['id'], 'email' => $a, 'first_name' => 'Ana', 'properties' => ['city' => 'Cluj', 'plan' => 'pro']])['subscribed']);
-            $meil->contacts->add(['audience_id' => $audience['id'], 'email' => $b, 'properties' => []]);
-            self::assertSame(['city'], $meil->contacts->add(['audience_id' => $audience['id'], 'email' => $a, 'properties' => ['city' => 'Iasi']])['kept_properties'] ?? null);
+            self::assertTrue($meil->contacts->add(['audience_ids' => [$audience['id']], 'email' => $a, 'first_name' => 'Ana', 'properties' => ['city' => 'Cluj', 'plan' => 'pro']])['audiences'][0]['subscribed']);
+            $meil->contacts->add(['audience_ids' => [$audience['id']], 'email' => $b, 'properties' => []]);
+            self::assertSame(['city'], $meil->contacts->add(['audience_ids' => [$audience['id']], 'email' => $a, 'properties' => ['city' => 'Iasi']])['kept_properties'] ?? null);
 
             $contact = $meil->contacts->get($a);
             self::assertSame($a, $contact['email']);
             self::assertSame(['city' => 'Cluj', 'plan' => 'pro'], $contact['properties']);
             self::assertSame(['city' => 'Iasi'], $meil->contacts->update($a, ['last_name' => 'Pop', 'properties' => ['plan' => null, 'city' => 'Iasi']])['properties']);
+            self::assertFalse($meil->contacts->update($a, ['audiences' => [$audience['id'] => false]])['audiences'][0]['subscribed']);
+            self::assertTrue($meil->contacts->update($a, ['audiences' => [$audience['id'] => true]])['audiences'][0]['subscribed']);
 
             self::assertSame(2, $meil->audiences->get($audience['id'])['contacts_count']);
             self::assertTrue($meil->audiences->listContacts($audience['id'], ['limit' => 1])['has_more']);

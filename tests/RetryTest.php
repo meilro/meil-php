@@ -138,7 +138,7 @@ final class RetryTest extends TestCase
         foreach ($replies as $reply) {
             $t = new FakeTransport($reply);
             try {
-                $this->client($t)->contacts->add(['audience_id' => 'a1', 'email' => 'c@y.ro']);
+                $this->client($t)->contacts->add(['audience_ids' => ['a1'], 'email' => 'c@y.ro']);
                 self::fail('expected an exception');
             } catch (MeilException) {
             }

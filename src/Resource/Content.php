@@ -10,6 +10,7 @@ use Meil\HttpClient;
  * @phpstan-type CheckContentParams array{
  *     from?: string,
  *     subject?: string,
+ *     preview_text?: string,
  *     html?: string,
  *     text?: string,
  *     template_id?: string,

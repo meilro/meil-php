@@ -9,9 +9,35 @@ use Meil\HttpClient;
 /**
  * Timestamps are UTC strings formatted "YYYY-MM-DD HH:MM:SS".
  *
- * @phpstan-type AddContactParams array{audience_id: string, email: string, first_name?: string, last_name?: string, properties?: array<string, mixed>}
- * @phpstan-type Contact array{object: 'contact', id: string, email: string, subscribed: bool, properties?: array<string, mixed>, kept_properties?: list<string>}
- * @phpstan-type UpdateContactParams array{first_name?: string, last_name?: string, properties?: array<string, mixed>}
+ * @phpstan-type AddContactParams array{
+ *     audience_ids: list<string>,
+ *     email: string,
+ *     first_name?: string,
+ *     last_name?: string,
+ *     properties?: array<string, mixed>,
+ *     confirm?: bool,
+ *     from?: string,
+ *     reply_to?: string,
+ *     confirmed_url?: string,
+ *     language?: 'ro'|'en',
+ * }
+ * @phpstan-type Membership array{
+ *     id: string,
+ *     audience_id: string,
+ *     subscribed: bool,
+ *     pending_confirmation: bool,
+ *     subscribed_at: string|null,
+ *     unsubscribed_at: string|null,
+ * }
+ * @phpstan-type Contact array{
+ *     object: 'contact',
+ *     email: string,
+ *     properties: array<string, mixed>,
+ *     audiences: list<Membership>,
+ *     kept_properties?: list<string>,
+ *     confirmation_sent?: bool,
+ * }
+ * @phpstan-type UpdateContactParams array{first_name?: string, last_name?: string, properties?: array<string, mixed>, audiences?: array<string, bool>}
  * @phpstan-type ContactDetail array{
  *     object: 'contact',
  *     email: string,
@@ -19,7 +45,7 @@ use Meil\HttpClient;
  *     last_name: string,
  *     properties: array<string, mixed>,
  *     created_at: string,
- *     audiences: list<array{id: string, audience_id: string, subscribed: bool}>,
+ *     audiences: list<Membership>,
  * }
  * @phpstan-type ContactDeleted array{object: 'contact', email: string, audience_id?: string, deleted: true}
  * @phpstan-type RequestOptions array{timeout?: int|float, max_retries?: int}
@@ -31,9 +57,12 @@ final class Contacts
     }
 
     /**
-     * POST /contacts: adds someone to an audience. An existing contact only
-     * gains the properties it lacks; clashing values are kept and named in
-     * "kept_properties". Never undoes an unsubscribe.
+     * POST /contacts: adds someone to the audiences in "audience_ids" (a list,
+     * also for one). An existing contact only gains the properties it lacks;
+     * clashing values are kept and named in "kept_properties". Never undoes an
+     * unsubscribe. With "confirm" => true they wait until they press the button
+     * in a confirmation email ("pending_confirmation"); someone who confirmed
+     * before is added straight away.
      *
      * @param AddContactParams $params
      * @param RequestOptions $options
@@ -61,7 +90,8 @@ final class Contacts
 
     /**
      * PATCH /contacts/{email}. Only what you send changes; a property set to
-     * null is removed.
+     * null is removed. "audiences" ([audienceId => true|false]) puts them on or
+     * takes them off lists, for a preference page on your own site.
      *
      * @param UpdateContactParams $params
      * @param RequestOptions $options

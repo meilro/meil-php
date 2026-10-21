@@ -17,6 +17,7 @@ use Meil\HttpClient;
  *     bcc?: Addresses,
  *     reply_to?: Addresses,
  *     subject?: string,
+ *     preview_text?: string,
  *     html?: string,
  *     text?: string,
  *     template_id?: string,

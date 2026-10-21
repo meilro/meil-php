@@ -23,6 +23,7 @@ use Meil\HttpClient;
  *     unsubscribed: bool,
  *     unsubscribed_at: string|null,
  *     created_at: string,
+ *     pending_confirmation: bool,
  * }
  * @phpstan-type ContactList array{object: 'list', has_more: bool, data: list<ContactListItem>}
  * @phpstan-type ListParams array{limit?: int, after?: string, before?: string}

@@ -161,17 +161,46 @@ Other broadcast methods: `get`, `list`, `update`, `delete`, `schedule($id, $date
 
 ```php
 $contact = $meil->contacts->add([
-    'audience_id' => 'aud_id',
-    'email'       => 'ana+news@example.com',
-    'first_name'  => 'Ana',
-    'properties'  => ['city' => 'Cluj'],
+    'audience_ids' => ['aud_id'], // one or more
+    'email'        => 'ana+news@example.com',
+    'first_name'   => 'Ana',
+    'properties'   => ['city' => 'Cluj'],
 ]);
+// $contact['audiences'] has one entry per audience, each with 'subscribed'.
 // An existing contact keeps its own values; clashes are listed in $contact['kept_properties'].
 
 $meil->contacts->update('ana+news@example.com', ['properties' => ['city' => 'Iași', 'old_field' => null]]); // null removes
 $meil->contacts->remove('aud_id', 'ana+news@example.com'); // off one audience
 $meil->contacts->delete('ana+news@example.com');           // everywhere, with its data
 ```
+
+### Confirmed sign-ups
+
+With `'confirm' => true` the person gets one email from the audience's domain and is subscribed only after pressing its button. Until then they get nothing (`'pending_confirmation' => true`), and a sign-up nobody confirms is deleted after 7 days. On the click, the contact gets `confirmed_at` and `confirmed_ip`. Someone who has confirmed once is added to new lists straight away.
+
+```php
+$signup = $meil->contacts->add([
+    'audience_ids'  => ['aud_news', 'aud_offers'],
+    'email'         => 'ana@example.com',
+    'confirm'       => true,
+    'confirmed_url' => 'https://example.com/thanks', // optional: where they land after confirming
+    'language'      => 'ro',                          // optional: the email's language, 'ro' or 'en'
+]);
+$signup['confirmation_sent']; // false when nothing was waiting, or after 3 emails to the same address in an hour
+```
+
+### Your own preference page
+
+Read the person's lists with `get`, save their choices with `update`:
+
+```php
+$lists = $meil->contacts->get('ana@example.com')['audiences'];
+// each: audience_id, subscribed, pending_confirmation, subscribed_at, unsubscribed_at
+
+$meil->contacts->update('ana@example.com', ['audiences' => ['aud_news' => true, 'aud_offers' => false]]);
+```
+
+`false` counts as the person's own unsubscribe. An address that bounced or reported spam stays blocked. To leave meil's unsubscribe link out of your campaigns, tick "I have my own unsubscribe page" on the domain's branding page; the one-click unsubscribe header stays.
 
 The SDK URL-encodes the email addresses in paths for you.
 
