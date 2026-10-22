@@ -9,7 +9,7 @@ use Meil\HttpClient;
 /**
  * Timestamps are UTC strings formatted "YYYY-MM-DD HH:MM:SS".
  *
- * @phpstan-type CreateAudienceParams array{name: string, domain: string, description?: string, visibility?: 'public'|'private'}
+ * @phpstan-type CreateAudienceParams array{name: string, domain?: string, description?: string, visibility?: 'public'|'private'}
  * @phpstan-type Audience array{object: 'audience', id: string, name: string, description: string, visibility: 'public'|'private', domain: string|null, created_at: string}
  * @phpstan-type AudienceDetail array{object: 'audience', id: string, name: string, description: string, visibility: 'public'|'private', domain: string|null, created_at: string, contacts_count: int}
  * @phpstan-type AudienceList array{object: 'list', data: list<array{id: string, name: string, description: string, visibility: 'public'|'private', domain: string|null, created_at: string}>}

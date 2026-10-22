@@ -9,14 +9,15 @@ use Meil\HttpClient;
 /**
  * Timestamps are UTC strings formatted "YYYY-MM-DD HH:MM:SS".
  *
- * @phpstan-type CreateTemplateParams array{name: string, html: string, subject?: string, preview_text?: string, text?: string}
- * @phpstan-type UpdateTemplateParams array{name?: string, subject?: string, preview_text?: string, html?: string, text?: string}
+ * @phpstan-type CreateTemplateParams array{name: string, html: string, subject?: string, preview_text?: string, text?: string, domain?: string}
+ * @phpstan-type UpdateTemplateParams array{name?: string, subject?: string, preview_text?: string, html?: string, text?: string, domain?: string}
  * @phpstan-type ContentIssue array{code: string, severity: 'high'|'medium'|'low', message: string, fix: string}
  * @phpstan-type Template array{
  *     object: 'template',
  *     id: string,
  *     name: string,
  *     subject: string,
+ *     domain: string|null,
  *     preview_text: string|null,
  *     html: string,
  *     text: string,
@@ -29,6 +30,7 @@ use Meil\HttpClient;
  *     id: string,
  *     name: string,
  *     subject: string,
+ *     domain: string|null,
  *     preview_text: string|null,
  *     html: string,
  *     text: string,
@@ -37,7 +39,7 @@ use Meil\HttpClient;
  *     updated_at: string,
  *     content_check: array{score: int, issues: list<ContentIssue>},
  * }
- * @phpstan-type TemplateList array{object: 'list', data: list<array{id: string, name: string, subject: string, created_at: string, updated_at: string}>}
+ * @phpstan-type TemplateList array{object: 'list', data: list<array{id: string, name: string, subject: string, domain: string|null, created_at: string, updated_at: string}>}
  * @phpstan-type TemplateDeleted array{object: 'template', id: string, deleted: true}
  * @phpstan-type RequestOptions array{timeout?: int|float, max_retries?: int}
  */

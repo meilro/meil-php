@@ -12,6 +12,8 @@ New:
 - `contacts->update()` with `audiences` (`[audienceId => true|false]`), for a preference page on your own site.
 - Every audience of a contact shows `pending_confirmation`, `subscribed_at` and `unsubscribed_at`. Listed contacts show `pending_confirmation`.
 - `preview_text` on emails, broadcasts and templates, and the `no_preview_text` content check.
+- Templates have a `domain`: set it when creating or changing one (optional, the key's domain by default). A key sees only its own domains' templates.
+- `domain` is optional when creating an audience: the key's domain by default.
 
 ## 0.1.0 (2026-10-14)
 
