@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 final class RetryTest extends TestCase
 {
-    private const SEND = ['from' => 'a@x.ro', 'to' => 'b@y.ro', 'subject' => 'S', 'html' => 'H'];
+    private const SEND = ['from' => 'a@example.org', 'to' => 'b@example.net', 'subject' => 'S', 'html' => 'H'];
 
     public function testWaitsOutRetryAfterOnRateLimit(): void
     {
@@ -138,7 +138,7 @@ final class RetryTest extends TestCase
         foreach ($replies as $reply) {
             $t = new FakeTransport($reply);
             try {
-                $this->client($t)->contacts->add(['audience_ids' => ['a1'], 'email' => 'c@y.ro']);
+                $this->client($t)->contacts->add(['audience_ids' => ['a1'], 'email' => 'c@example.net']);
                 self::fail('expected an exception');
             } catch (MeilException) {
             }

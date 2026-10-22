@@ -20,8 +20,8 @@ Keys are the API's own field names (`reply_to`, `template_id`, `audience_id`), s
 
 ```php
 $sent = $meil->emails->send([
-    'from'    => 'Magazinul Tău <comenzi@magazin.ro>',
-    'to'      => 'ana@example.com', // a string, "a@x.ro, b@y.ro", or an array; at most 50 recipients with cc and bcc
+    'from'    => 'Magazinul Tău <comenzi@example.com>',
+    'to'      => 'ana@example.com', // a string, "a@example.org, b@example.net", or an array; at most 50 recipients with cc and bcc
     'subject' => 'Comanda 2451 a fost expediată',
     'html'    => '<p>Salut Ana, comanda ta e pe drum.</p>',
 ]);
@@ -32,7 +32,7 @@ With a saved template and its placeholders:
 
 ```php
 $meil->emails->send([
-    'from'        => 'Magazinul Tău <comenzi@magazin.ro>',
+    'from'        => 'Magazinul Tău <comenzi@example.com>',
     'to'          => 'ana@example.com',
     'template_id' => 'tpl_id',
     'variables'   => ['name' => 'Ana', 'order_id' => 2451],
@@ -43,12 +43,12 @@ With attachments. Pass the file's **raw bytes** as `content`, and the SDK base64
 
 ```php
 $meil->emails->send([
-    'from'        => 'Magazinul Tău <facturi@magazin.ro>',
+    'from'        => 'Magazinul Tău <facturi@example.com>',
     'to'          => 'ana@example.com',
     'subject'     => 'Factura pentru comanda 2451',
     'heading'     => 'Mulțumim pentru comandă', // no html: built in your domain's branding
     'body'        => 'Factura este atașată.',
-    'button'      => ['label' => 'Vezi comanda', 'url' => 'https://magazin.ro/comenzi/2451'],
+    'button'      => ['label' => 'Vezi comanda', 'url' => 'https://example.com/comenzi/2451'],
     'attachments' => [
         ['filename' => 'factura-2451.pdf', 'content' => file_get_contents('/path/factura-2451.pdf')],
     ],
@@ -136,7 +136,7 @@ $meil->emails->get($id, ['timeout' => 5, 'max_retries' => 0]); // per call
 ```php
 $result = $meil->broadcasts->create([
     'audience_id' => 'aud_id',
-    'from'        => 'Magazinul Tău <noutati@magazin.ro>',
+    'from'        => 'Magazinul Tău <noutati@example.com>',
     'subject'     => 'Noutăți în martie',
     'html'        => '<h1>Salut {{first_name|acolo}}</h1> … <a href="{{unsubscribe_url}}">Dezabonare</a>',
     'send'        => true, // or 'scheduled_at' => new DateTimeImmutable('2026-11-01 09:00', new DateTimeZone('Europe/Bucharest')) on paid plans; or neither for a draft
@@ -259,7 +259,7 @@ To send through something other than cURL (WordPress's HTTP API, a PSR-18 client
 composer install
 composer test       # fake transport, no network
 composer analyse    # PHPStan, level 8
-MEIL_API_KEY=... MEIL_TEST_DOMAIN=yourdomain.ro composer test:live   # real API; mails only the SES simulator
+MEIL_API_KEY=... MEIL_TEST_DOMAIN=example.com composer test:live   # real API; mails only the SES simulator
 ```
 
 ## License

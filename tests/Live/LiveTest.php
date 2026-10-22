@@ -16,7 +16,7 @@ use Meil\Transport\TransportInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Against the real API: MEIL_API_KEY=... MEIL_TEST_DOMAIN=yourdomain.ro composer test:live
+ * Against the real API: MEIL_API_KEY=... MEIL_TEST_DOMAIN=example.com composer test:live
  *
  * Mails only Amazon SES's mailbox simulator, keeps 0.3 s between calls, never
  * sends a broadcast, and deletes everything it creates.

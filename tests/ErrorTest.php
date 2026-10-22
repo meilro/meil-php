@@ -104,7 +104,7 @@ final class ErrorTest extends TestCase
     {
         $held = ['message' => 'The broadcast is held for review.', 'name' => 'under_review'];
         $t = new FakeTransport(FakeTransport::json(['id' => 'b9', 'error' => $held], 202));
-        $result = $this->client($t)->broadcasts->create(['audience_id' => 'a1', 'from' => 'n@x.ro', 'subject' => 'S', 'html' => 'H', 'send' => true]);
+        $result = $this->client($t)->broadcasts->create(['audience_id' => 'a1', 'from' => 'n@example.org', 'subject' => 'S', 'html' => 'H', 'send' => true]);
         self::assertSame(
             ['object' => 'broadcast', 'id' => 'b9', 'status' => 'under_review', 'under_review' => true, 'message' => $held['message']],
             $result,

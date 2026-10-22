@@ -17,7 +17,7 @@ use Meil\Transport\TransportInterface;
  *
  *     $meil = new Meil\Meil('meil_...');
  *     $meil->emails->send([
- *         'from' => 'Shop <hello@shop.ro>',
+ *         'from' => 'Shop <hello@example.com>',
  *         'to' => 'ana@example.com',
  *         'subject' => 'Hi',
  *         'html' => '<p>Hi</p>',

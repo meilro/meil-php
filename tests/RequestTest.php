@@ -6,7 +6,7 @@ namespace Meil\Tests;
 
 final class RequestTest extends TestCase
 {
-    private const SEND = ['from' => 'a@x.ro', 'to' => ['b@y.ro', 'c@y.ro'], 'subject' => 'S', 'html' => 'H'];
+    private const SEND = ['from' => 'a@example.org', 'to' => ['b@example.net', 'c@example.net'], 'subject' => 'S', 'html' => 'H'];
     private const UUID = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/';
 
     public function testSendMakesARandomUuidPerCall(): void
@@ -25,7 +25,7 @@ final class RequestTest extends TestCase
         $t = new FakeTransport(FakeTransport::json(['id' => 'e1']), FakeTransport::json(['object' => 'broadcast', 'id' => 'b1', 'status' => 'draft', 'scheduled_at' => null]));
         $meil = $this->client($t);
         $meil->emails->send(self::SEND, ['idempotency_key' => 'order-2451-confirmation']);
-        $meil->broadcasts->create(['audience_id' => 'a1', 'from' => 'n@x.ro', 'subject' => 'S', 'html' => 'H'], ['idempotency_key' => 'march-newsletter']);
+        $meil->broadcasts->create(['audience_id' => 'a1', 'from' => 'n@example.org', 'subject' => 'S', 'html' => 'H'], ['idempotency_key' => 'march-newsletter']);
         self::assertSame('order-2451-confirmation', $t->requests[0]['headers']['idempotency-key']);
         self::assertSame('march-newsletter', $t->requests[1]['headers']['idempotency-key']);
     }
@@ -34,7 +34,7 @@ final class RequestTest extends TestCase
     {
         $t = new FakeTransport(FakeTransport::json([]), FakeTransport::json([]), FakeTransport::json([]), FakeTransport::json([]));
         $meil = $this->client($t);
-        $meil->broadcasts->create(['audience_id' => 'a1', 'from' => 'n@x.ro', 'subject' => 'S', 'html' => 'H']);
+        $meil->broadcasts->create(['audience_id' => 'a1', 'from' => 'n@example.org', 'subject' => 'S', 'html' => 'H']);
         $meil->broadcasts->send('b1');
         $meil->templates->create(['name' => 'T', 'html' => 'H']);
         $meil->content->check(['html' => 'H']);
@@ -103,7 +103,7 @@ final class RequestTest extends TestCase
     {
         $t = new FakeTransport(FakeTransport::json([]), FakeTransport::json([]), FakeTransport::json([]));
         $meil = $this->client($t);
-        $meil->contacts->add(['audience_ids' => ['a1'], 'email' => 'c@y.ro', 'properties' => []]);
+        $meil->contacts->add(['audience_ids' => ['a1'], 'email' => 'c@example.net', 'properties' => []]);
         $meil->emails->send(self::SEND + ['variables' => []]);
         $meil->broadcasts->unschedule('b1');
         self::assertStringContainsString('"properties":{}', (string) $t->requests[0]['raw']);
@@ -114,14 +114,14 @@ final class RequestTest extends TestCase
     public function testKeepsUnicodeAndSlashesReadable(): void
     {
         $t = new FakeTransport(FakeTransport::json(['id' => 'e1']));
-        $this->client($t)->emails->send(['from' => 'a@x.ro', 'to' => 'b@y.ro', 'subject' => 'Comandă', 'html' => '<a href="https://x.ro/a">ș</a>']);
+        $this->client($t)->emails->send(['from' => 'a@example.org', 'to' => 'b@example.net', 'subject' => 'Comandă', 'html' => '<a href="https://example.org/a">ș</a>']);
         self::assertStringContainsString('"subject":"Comandă"', (string) $t->requests[0]['raw']);
-        self::assertStringContainsString('https://x.ro/a', (string) $t->requests[0]['raw']);
+        self::assertStringContainsString('https://example.org/a', (string) $t->requests[0]['raw']);
     }
 
     public function testRefusesInvalidUtf8(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->client(new FakeTransport())->emails->send(['from' => 'a@x.ro', 'to' => 'b@y.ro', 'subject' => "\xB1\x31", 'html' => 'H']);
+        $this->client(new FakeTransport())->emails->send(['from' => 'a@example.org', 'to' => 'b@example.net', 'subject' => "\xB1\x31", 'html' => 'H']);
     }
 }
