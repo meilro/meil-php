@@ -81,6 +81,8 @@ final class ClientTest extends TestCase
             'listContacts' => [fn (Meil $m) => $m->audiences->listContacts('a1', ['limit' => 1000]), 'GET', '/audiences/a1/contacts?limit=1000', null],
             'addContact' => [fn (Meil $m) => $m->contacts->add(['audience_ids' => ['a1'], 'email' => 'c@example.net', 'properties' => ['city' => 'Cluj'], 'confirm' => true]), 'POST', '/contacts', ['audience_ids' => ['a1'], 'email' => 'c@example.net', 'properties' => ['city' => 'Cluj'], 'confirm' => true]],
             'getContact' => [fn (Meil $m) => $m->contacts->get('c@example.net'), 'GET', '/contacts/c%40example.net', null],
+            'getConfirmation' => [fn (Meil $m) => $m->contacts->getConfirmation('tok.1'), 'GET', '/contacts/confirm/tok.1', null],
+            'confirmContact' => [fn (Meil $m) => $m->contacts->confirm('tok.1', '203.0.113.7'), 'POST', '/contacts/confirm', ['token' => 'tok.1', 'ip' => '203.0.113.7']],
             'updateContact' => [fn (Meil $m) => $m->contacts->update('c@example.net', ['properties' => ['old' => null], 'audiences' => ['a1' => true, 'a2' => false]]), 'PATCH', '/contacts/c%40example.net', ['properties' => ['old' => null], 'audiences' => ['a1' => true, 'a2' => false]]],
             'deleteContact' => [fn (Meil $m) => $m->contacts->delete('c@example.net'), 'DELETE', '/contacts/c%40example.net', null],
             'removeContact' => [fn (Meil $m) => $m->contacts->remove('a1', 'c@example.net'), 'DELETE', '/audiences/a1/contacts/c%40example.net', null],
@@ -101,9 +103,9 @@ final class ClientTest extends TestCase
         ];
     }
 
-    public function testCoversAll27Operations(): void
+    public function testCoversAll29Operations(): void
     {
-        self::assertCount(27, self::operations());
+        self::assertCount(29, self::operations());
     }
 
     /** @param \Closure(Meil): mixed $call */

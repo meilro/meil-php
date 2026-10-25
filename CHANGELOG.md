@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 (2026-10-25)
+
+New:
+
+- Your own confirmation page: `contacts->add()` takes `confirm_page` (a page on the audience's domain, like `https://example.com/confirm`), so the confirmation email's button opens your page instead of meil.ro's, with `?token=…` added to the link.
+- `contacts->getConfirmation($token)`: where that sign-up stands (`pending`, `confirmed` or `expired`), with the address and the audiences by name. Changes nothing.
+- `contacts->confirm($token, $ip)`: confirms it when the person presses your button, storing the visitor's IP as proof. Harmless when pressed twice (`already_confirmed`); an expired link comes back as `'status' => 'expired'`, not as an exception.
+
+Changed:
+
+- With `'confirm' => true`, someone who already confirmed is added without a new email only to lists on the same domain (its subdomains included). Another domain of your account sends its own confirmation email.
+
 ## 0.2.0 (2026-10-21)
 
 Breaking:

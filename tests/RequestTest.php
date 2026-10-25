@@ -124,4 +124,43 @@ final class RequestTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->client(new FakeTransport())->emails->send(['from' => 'a@example.org', 'to' => 'b@example.net', 'subject' => "\xB1\x31", 'html' => 'H']);
     }
+    public function testAddPassesConfirmPageThrough(): void
+    {
+        $t = new FakeTransport(FakeTransport::json([]));
+        $this->client($t)->contacts->add([
+            'audience_ids' => ['aud_1'], 'email' => 'a@b.com', 'confirm' => true,
+            'confirm_page' => 'https://example.com/confirm',
+        ]);
+        self::assertSame('https://example.com/confirm', $t->requests[0]['body']['confirm_page'] ?? null);
+    }
+
+    public function testConfirmSendsTheTokenAndLeavesOutAnEmptyIp(): void
+    {
+        $done = ['object' => 'confirmation', 'status' => 'confirmed', 'email' => 'a@b.com', 'audiences' => [],
+            'confirmed_at' => '2026-03-01 09:14:02', 'expires_at' => '2026-03-08 09:00:00', 'already_confirmed' => false];
+        $t = new FakeTransport(FakeTransport::json($done), FakeTransport::json($done), FakeTransport::json($done));
+        $meil = $this->client($t);
+        self::assertSame('confirmed', $meil->contacts->confirm('tok.1', '2001:db8::7')['status']);
+        $meil->contacts->confirm('tok.1');
+        $meil->contacts->confirm('tok.1', '');
+        self::assertSame([
+            ['token' => 'tok.1', 'ip' => '2001:db8::7'],
+            ['token' => 'tok.1'],
+            ['token' => 'tok.1'],
+        ], array_column($t->requests, 'body'));
+    }
+
+    public function testAnExpiredLinkIsAStatusNotAnError(): void
+    {
+        $t = new FakeTransport(FakeTransport::json(['object' => 'confirmation', 'status' => 'expired', 'email' => 'a@b.com', 'audiences' => [],
+            'confirmed_at' => null, 'expires_at' => '2026-03-08 09:00:00', 'already_confirmed' => false]));
+        self::assertSame('expired', $this->client($t)->contacts->confirm('tok.1')['status']);
+    }
+
+    public function testAnInvalidTokenThrowsNotFound(): void
+    {
+        $t = new FakeTransport(FakeTransport::error(404, 'not_found'));
+        $this->expectException(\Meil\Exception\NotFoundException::class);
+        $this->client($t)->contacts->getConfirmation('nope');
+    }
 }

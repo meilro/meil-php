@@ -25,7 +25,7 @@ use Meil\Transport\TransportInterface;
  */
 final class Meil
 {
-    public const VERSION = '0.2.0';
+    public const VERSION = '0.3.0';
 
     public readonly Emails $emails;
     public readonly Audiences $audiences;

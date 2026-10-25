@@ -176,7 +176,7 @@ $meil->contacts->delete('ana+news@example.com');           // everywhere, with i
 
 ### Confirmed sign-ups
 
-With `'confirm' => true` the person gets one email from the audience's domain and is subscribed only after pressing its button. Until then they get nothing (`'pending_confirmation' => true`), and a sign-up nobody confirms is deleted after 7 days. On the click, the contact gets `confirmed_at` and `confirmed_ip`. Someone who has confirmed once is added to new lists straight away.
+With `'confirm' => true` the person gets one email from the audience's domain and is subscribed only after pressing its button. Until then they get nothing (`'pending_confirmation' => true`), and a sign-up nobody confirms is deleted after 7 days. On the click, the contact gets `confirmed_at` and `confirmed_ip`. Someone who has already confirmed a list on the same domain is added to its other lists straight away. Another domain of your account asks again.
 
 ```php
 $signup = $meil->contacts->add([
@@ -188,6 +188,39 @@ $signup = $meil->contacts->add([
 ]);
 $signup['confirmation_sent']; // false when nothing was waiting, or after 3 emails to the same address in an hour
 ```
+
+### Your own confirmation page
+
+By default the email's button opens a confirmation page on meil.ro, in your domain's branding. With `confirm_page` it opens a page on your own site instead, and meil still keeps track of who is waiting, expires the link after 7 days and stores the proof. Two calls do it: `getConfirmation` when the page opens, `confirm` when the person presses your button.
+
+```php
+// 1. The sign-up: the page must be on the audience's domain or a subdomain,
+//    and is used instead of confirmed_url. The email's button opens it with
+//    ?token=… added (&token=… if the address already has a query).
+$meil->contacts->add([
+    'audience_ids' => ['aud_news'],
+    'email'        => 'ana@example.com',
+    'confirm'      => true,
+    'confirm_page' => 'https://example.com/confirm',
+]);
+
+// 2. confirm.php, as it opens (GET): only look, never confirm here.
+$token = (string) ($_GET['token'] ?? $_POST['token'] ?? '');
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $confirmation = $meil->contacts->getConfirmation($token);
+    // $confirmation['status']: 'pending' (show a form with a button that posts the token back),
+    // 'confirmed' (already done) or 'expired' (the link is too old, or nothing is left to confirm).
+    // $confirmation['email'] and $confirmation['audiences'] ([['id' => ..., 'name' => ...]]) say what it is for.
+}
+
+// 3. The button was pressed (POST): confirm, with the visitor's IP as proof.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $result = $meil->contacts->confirm($token, $_SERVER['REMOTE_ADDR'] ?? null);
+    // $result['status']: 'confirmed' ($result['already_confirmed'] is true if pressed before) or 'expired'.
+}
+```
+
+Confirm only in step 3. Outlook and company mail filters open every link in an email to scan it, so a page that confirms as it opens would subscribe everyone. Behind a proxy or Cloudflare, pass the visitor's real IP, not `REMOTE_ADDR`. A token that is not valid (cut short, changed, or from another account) throws `NotFoundException`; an expired one is not an error, it comes back with `'status' => 'expired'`.
 
 ### Your own preference page
 
@@ -228,7 +261,7 @@ The other lists (`audiences->list()`, `broadcasts->list()`, `templates->list()`)
 | --- | --- |
 | `emails` | `send`, `list`, `iterate`, `get` |
 | `audiences` | `create`, `list`, `get`, `delete`, `listContacts`, `iterateContacts` |
-| `contacts` | `add`, `get`, `update`, `delete`, `remove` |
+| `contacts` | `add`, `get`, `update`, `delete`, `remove`, `getConfirmation`, `confirm` |
 | `broadcasts` | `create`, `list`, `get`, `update`, `delete`, `send`, `schedule`, `unschedule` |
 | `templates` | `create`, `list`, `get`, `update`, `delete` |
 | `content` | `check` |

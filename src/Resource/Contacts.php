@@ -19,6 +19,7 @@ use Meil\HttpClient;
  *     from?: string,
  *     reply_to?: string,
  *     confirmed_url?: string,
+ *     confirm_page?: string,
  *     language?: 'ro'|'en',
  * }
  * @phpstan-type Membership array{
@@ -48,6 +49,23 @@ use Meil\HttpClient;
  *     audiences: list<Membership>,
  * }
  * @phpstan-type ContactDeleted array{object: 'contact', email: string, audience_id?: string, deleted: true}
+ * @phpstan-type Confirmation array{
+ *     object: 'confirmation',
+ *     status: 'pending'|'confirmed'|'expired',
+ *     email: string,
+ *     audiences: list<array{id: string, name: string}>,
+ *     confirmed_at: string|null,
+ *     expires_at: string,
+ * }
+ * @phpstan-type ConfirmationResult array{
+ *     object: 'confirmation',
+ *     status: 'pending'|'confirmed'|'expired',
+ *     email: string,
+ *     audiences: list<array{id: string, name: string}>,
+ *     confirmed_at: string|null,
+ *     expires_at: string,
+ *     already_confirmed: bool,
+ * }
  * @phpstan-type RequestOptions array{timeout?: int|float, max_retries?: int}
  */
 final class Contacts
@@ -61,8 +79,11 @@ final class Contacts
      * also for one). An existing contact only gains the properties it lacks;
      * clashing values are kept and named in "kept_properties". Never undoes an
      * unsubscribe. With "confirm" => true they wait until they press the button
-     * in a confirmation email ("pending_confirmation"); someone who confirmed
-     * before is added straight away.
+     * in a confirmation email ("pending_confirmation"); someone who already
+     * confirmed a list on the same domain is added straight away. With
+     * "confirm_page" (your own page) the email's button opens that page
+     * instead of meil.ro's, with ?token=… added to its link, and it confirms
+     * with confirm().
      *
      * @param AddContactParams $params
      * @param RequestOptions $options
@@ -73,6 +94,47 @@ final class Contacts
     {
         /** @var Contact */
         return $this->http->request('POST', '/contacts', [], self::objects($params), null, $options)['data'];
+    }
+
+    /**
+     * GET /contacts/confirm/{token}: where a sign-up stands, for your own
+     * confirmation page ("confirm_page"), with the token from its link. Changes nothing,
+     * so call it as the page opens: show the button while "status" is
+     * "pending", say the link expired when it is "expired". Throws
+     * NotFoundException for a token that is not valid (cut short, changed, or
+     * another account's).
+     *
+     * @param RequestOptions $options
+     *
+     * @return Confirmation
+     */
+    public function getConfirmation(string $token, array $options = []): array
+    {
+        /** @var Confirmation */
+        return $this->http->request('GET', '/contacts/confirm/' . HttpClient::segment($token), [], null, null, $options)['data'];
+    }
+
+    /**
+     * POST /contacts/confirm: subscribes the person to every audience in the
+     * link. Call it only when they press your page's button, never when the
+     * page loads: mail filters open every link in an email to scan it, and a
+     * page that confirms on opening would subscribe everyone. Pass the
+     * visitor's IP as $ip, saved as proof. Pressing twice is harmless
+     * ("already_confirmed"). An expired link is not an error: "status" is
+     * "expired".
+     *
+     * @param RequestOptions $options
+     *
+     * @return ConfirmationResult
+     */
+    public function confirm(string $token, ?string $ip = null, array $options = []): array
+    {
+        $body = ['token' => $token];
+        if ($ip !== null && $ip !== '') {
+            $body['ip'] = $ip;
+        }
+        /** @var ConfirmationResult */
+        return $this->http->request('POST', '/contacts/confirm', [], $body, null, $options)['data'];
     }
 
     /**
