@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 (2026-10-26)
+
+New:
+
+- `$meil->broadcasts->test()`: a test to your test audience (made on the Audiences page of the dashboard). Each of its contacts gets a copy filled in with their own data, with "[Test]" before the subject. Pass a broadcast id to test that broadcast, which stays as it is, or its content (`from`, `subject`, `html` or `template_id`, `variables`…) to test it without saving anything. It answers with the addresses it went to. Without a test audience that has contacts, it throws a `ValidationException` named `test_audience_missing`.
+
 ## 0.3.0 (2026-10-25)
 
 New:

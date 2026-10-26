@@ -155,6 +155,25 @@ if ($result['status'] === 'under_review') {
 
 `$meil->broadcasts->send($id)` sends a draft. It can also return the `under_review` result.
 
+### Test sends
+
+Tests go to your test audience, which you create on the Audiences page of the dashboard. Each of its contacts gets their own copy, filled in with their data, with "[Test]" before the subject.
+
+```php
+// A broadcast you already made. It stays as it is.
+$meil->broadcasts->test('broadcast_id');
+
+// Just the content: sent at once, nothing is saved.
+$test = $meil->broadcasts->test([
+    'from'        => 'Magazinul Tău <noutati@example.com>',
+    'template_id' => 'template_id',
+    'variables'   => ['promo_code' => 'SPRING10'],
+]);
+echo 'Test sent to ' . implode(', ', $test['to']);
+```
+
+Without a test audience that has contacts, it throws a `ValidationException` whose `getErrorName()` is `test_audience_missing`.
+
 Other broadcast methods: `get`, `list`, `update`, `delete`, `schedule($id, $date)` and `unschedule`.
 
 ## Contacts
@@ -262,7 +281,7 @@ The other lists (`audiences->list()`, `broadcasts->list()`, `templates->list()`)
 | `emails` | `send`, `list`, `iterate`, `get` |
 | `audiences` | `create`, `list`, `get`, `delete`, `listContacts`, `iterateContacts` |
 | `contacts` | `add`, `get`, `update`, `delete`, `remove`, `getConfirmation`, `confirm` |
-| `broadcasts` | `create`, `list`, `get`, `update`, `delete`, `send`, `schedule`, `unschedule` |
+| `broadcasts` | `create`, `list`, `get`, `update`, `delete`, `send`, `test`, `schedule`, `unschedule` |
 | `templates` | `create`, `list`, `get`, `update`, `delete` |
 | `content` | `check` |
 

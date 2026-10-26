@@ -55,6 +55,17 @@ use Meil\HttpClient;
  * }
  * @phpstan-type BroadcastList array{object: 'list', data: list<array{id: string, audience_id: string|null, subject: string, status: BroadcastStatus, scheduled_at: string|null, created_at: string, sent_at: string|null}>}
  * @phpstan-type BroadcastDeleted array{object: 'broadcast', id: string, deleted: true}
+ * @phpstan-type TestBroadcastParams array{
+ *     from: string,
+ *     reply_to?: string,
+ *     subject?: string,
+ *     preview_text?: string,
+ *     html?: string,
+ *     text?: string,
+ *     template_id?: string,
+ *     variables?: array<string, string|int|float>,
+ * }
+ * @phpstan-type BroadcastTest array{object: 'broadcast_test', to: list<string>}
  * @phpstan-type RequestOptions array{timeout?: int|float, max_retries?: int}
  * @phpstan-type SendOptions array{timeout?: int|float, max_retries?: int, idempotency_key?: string}
  */
@@ -167,6 +178,36 @@ final class Broadcasts
 
         /** @var BroadcastQueued */
         return $response['data'];
+    }
+
+    /**
+     * A test to your test audience (made on the Audiences page of the
+     * dashboard): each of its contacts gets a copy filled in with their own
+     * data, with "[Test]" before the subject. Pass a broadcast id to test that
+     * broadcast, which stays as it is, or its content to test it without
+     * saving anything. Without a test audience that has contacts it throws a
+     * ValidationException named "test_audience_missing".
+     *
+     * @param string|TestBroadcastParams $broadcast
+     * @param SendOptions $options "idempotency_key" applies to content only
+     *
+     * @return BroadcastTest
+     */
+    public function test(string|array $broadcast, array $options = []): array
+    {
+        if (is_string($broadcast)) {
+            // POST /broadcasts/{id}/send with audience_id "test". Like send(), no Idempotency-Key.
+            $path = '/broadcasts/' . HttpClient::segment($broadcast) . '/send';
+            /** @var BroadcastTest */
+            return $this->http->request('POST', $path, [], ['audience_id' => 'test'], null, $options)['data'];
+        }
+        // POST /broadcasts with audience_id "test": sent at once, nothing saved.
+        if (isset($broadcast['variables']) && $broadcast['variables'] === []) {
+            $broadcast['variables'] = new \stdClass();
+        }
+        $key = $options['idempotency_key'] ?? HttpClient::uuid();
+        /** @var BroadcastTest */
+        return $this->http->request('POST', '/broadcasts', [], ['audience_id' => 'test'] + $broadcast, $key, $options)['data'];
     }
 
     /**

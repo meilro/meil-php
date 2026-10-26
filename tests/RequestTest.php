@@ -44,6 +44,22 @@ final class RequestTest extends TestCase
         }
     }
 
+    public function testTestSendsGoToTheTestAudience(): void
+    {
+        $answer = ['object' => 'broadcast_test', 'to' => ['ana@example.com']];
+        $t = new FakeTransport(FakeTransport::json($answer), FakeTransport::json($answer));
+        $meil = $this->client($t);
+        self::assertSame($answer, $meil->broadcasts->test('b/1'));
+        $meil->broadcasts->test(['from' => 'n@example.org', 'subject' => 'S', 'html' => 'H']);
+        self::assertSame('POST', $t->requests[0]['method']);
+        self::assertStringEndsWith('/broadcasts/b%2F1/send', $t->requests[0]['url']);
+        self::assertSame(['audience_id' => 'test'], $t->requests[0]['body']);
+        self::assertArrayNotHasKey('idempotency-key', $t->requests[0]['headers']);
+        self::assertStringEndsWith('/broadcasts', $t->requests[1]['url']);
+        self::assertSame(['audience_id' => 'test', 'from' => 'n@example.org', 'subject' => 'S', 'html' => 'H'], $t->requests[1]['body']);
+        self::assertMatchesRegularExpression(self::UUID, $t->requests[1]['headers']['idempotency-key']);
+    }
+
     public function testEncodesEmailsInPaths(): void
     {
         $t = new FakeTransport(FakeTransport::json([]), FakeTransport::json([]), FakeTransport::json([]), FakeTransport::json([]));
